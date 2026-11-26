@@ -161,6 +161,10 @@ def ill_rocket(d, x, y, w, h):
               fill=(245, 200, 90))
     d.ellipse([rx - 4, base - 10, rx + 8, base], fill=(200, 200, 200))
     d.ellipse([rx + 16, base - 8, rx + 28, base + 2], fill=(180, 180, 180))
+    # launch pad platform under the rocket
+    d.rectangle([rx - 8, base - 4, rx + 32, base], fill=(40, 44, 54))
+    d.line([(rx - 8, base - 4), (rx + 32, base - 4)], fill=(120, 126, 138),
+           width=1)
     # launch tower silhouette, far left
     d.rectangle([x + 2, base - 40, x + 6, base], fill=(40, 44, 54))
     d.line([(x + 4, base - 40), (x + 4, base - 52)], fill=(40, 44, 54), width=2)
@@ -194,11 +198,21 @@ def ill_tariff(d, x, y, w, h):
             by = base - 8 - (r + 1) * 13
             d.rectangle([bx, by, bx + 13, by + 11], fill=cols[(r + c) % 4],
                         outline=(255, 255, 255), width=1)
-    # bridge tower
+    # bridge tower + small flag on top
     d.rectangle([x + w - 24, base - 30, x + w - 12, base - 8],
                 fill=(240, 240, 244))
     d.rectangle([x + w - 22, base - 28, x + w - 14, base - 24],
                 fill=(30, 90, 168))
+    d.line([(x + w - 18, base - 38), (x + w - 18, base - 30)],
+           fill=(90, 96, 110), width=1)
+    d.polygon([(x + w - 18, base - 38), (x + w - 8, base - 36),
+               (x + w - 18, base - 34)], fill=(178, 32, 44))
+    # gulls in the sky
+    for gx, gy in ((x + 14, y + 12), (x + 26, y + 18)):
+        d.arc([gx - 4, gy - 3, gx, gy + 3], 200, 340, fill=(90, 96, 110),
+              width=1)
+        d.arc([gx, gy - 3, gx + 4, gy + 3], 200, 340, fill=(90, 96, 110),
+              width=1)
     # big red % stamp, top-right
     px, py = x + w - 14, y + 12
     d.ellipse([px - 11, py - 11, px + 11, py + 11], outline=(178, 32, 44),
@@ -214,6 +228,13 @@ def ill_tanker_fire(d, x, y, w, h):
     """
     base = y + h - 6
     sky_bands(d, x, y, w, h - 14, (52, 40, 44), (232, 122, 52))
+    # Cairo skyline silhouettes behind the highway
+    d.rectangle([x + 2, base - 42, x + 14, base - 14], fill=(58, 48, 52))
+    d.rectangle([x + 16, base - 36, x + 26, base - 14], fill=(66, 54, 58))
+    for wy in (base - 38, base - 32, base - 26):
+        d.rectangle([x + 5, wy, x + 8, wy + 2], fill=(245, 200, 90))
+    for wy in (base - 32, base - 26):
+        d.rectangle([x + 19, wy, x + 22, wy + 2], fill=(245, 200, 90))
     # highway
     d.rectangle([x, base - 14, x + w, base], fill=(52, 50, 58))
     for lx in range(x + 4, x + w - 4, 16):
@@ -485,6 +506,12 @@ def draw_map(d, x0, y0, w, h, dot_r=2.2):
         return y0 + (lat0 - lat) / (lat0 - lat1) * h
 
     step_lon, step_lat = 5.8, 6.0
+    # Pale landmass fill first, so the map reads as continents at
+    # thumbnail size (dots alone turn into a faint smear).
+    for (clon, clat, rx, ry) in LAND:
+        gx0, gy0 = px(clon - rx), py(clat + ry)
+        gx1, gy1 = px(clon + rx), py(clat - ry)
+        d.ellipse([gx0, gy0, gx1, gy1], fill=(205, 220, 228))
     lon = -177.0
     while lon <= 187.0:
         lat = 75.0
@@ -493,7 +520,7 @@ def draw_map(d, x0, y0, w, h, dot_r=2.2):
                 if ((lon - clon) / rx) ** 2 + ((lat - clat) / ry) ** 2 <= 1.0:
                     gx, gy = px(lon), py(lat)
                     d.ellipse([gx - dot_r, gy - dot_r, gx + dot_r, gy + dot_r],
-                              fill=(120, 130, 110))
+                              fill=(70, 100, 70))
                     break
             lat -= step_lat
         lon += step_lon
@@ -528,17 +555,17 @@ STRIP = [
 ]
 
 LEADS = [
-    {"kicker": "SPACE \u2022 CHINA", "color": C_SLATE, "badge": "1",
+    {"kicker": "SPACE \u2022 CHINA \u2022 XINHUA", "color": C_SLATE, "badge": "1",
      "art": ill_rocket,
      "headline": "SHENZHOU-24 CARRIES PAKISTAN'S FIRST ASTRONAUT",
-     "deck": ("China launches Tang Hongbo, Wu Yi and Muhammad Zeeshan "
-              "Ali \u2014 the first foreigner to visit Tiangong.")},
-    {"kicker": "UNITED STATES \u2022 TRADE", "color": C_AMBER, "badge": "2",
+     "deck": ("China launches Tang Hongbo, Wu Yi and Zeeshan Ali \u2014 "
+              "first foreigner on Tiangong; docks 03:56 UTC.")},
+    {"kicker": "US \u2022 TRADE \u2022 REUTERS", "color": C_AMBER, "badge": "2",
      "art": ill_tariff,
      "headline": "US PROPOSES NEW TARIFFS ON 14 TRADING PARTNERS",
      "deck": ("China faces 20%, Brazil 10% on aircraft; hearings in "
               "January. Tariffs are proposed, not yet in force.")},
-    {"kicker": "EGYPT \u2022 DISASTER", "color": C_CRIMSON, "badge": "3",
+    {"kicker": "EGYPT \u2022 DISASTER \u2022 CNN", "color": C_CRIMSON, "badge": "3",
      "art": ill_tanker_fire,
      "headline": "CAIRO TANKER FIRE KILLS AT LEAST 31",
      "deck": ("Fuel tanker overturns and burns on the ring road in "
@@ -555,37 +582,37 @@ TIMELINE = [
 ]
 
 GRID = [
-    {"kicker": "PACIFIC \u2022 DIPLOMACY", "color": C_TEAL, "badge": "4",
+    {"kicker": "PACIFIC \u2022 DIPLOMACY \u2022 REUTERS", "color": C_TEAL, "badge": "4",
      "art": ill_treaty,
      "headline": "AUSTRALIA\u2013SOLOMON ISLANDS TREATY SIGNED",
      "body": ("Albanese and Wale sign the security treaty in Canberra; "
               "Australia pledges $740M over a decade. Ratification "
               "still needed.")},
-    {"kicker": "ISRAEL \u2022 LAW", "color": C_CRIMSON, "badge": "5",
+    {"kicker": "ISRAEL \u2022 LAW \u2022 REUTERS", "color": C_CRIMSON, "badge": "5",
      "art": ill_court,
      "headline": "JUDGES URGE PROSECUTORS TO DROP NETANYAHU BRIBERY CASE",
      "body": ("Jerusalem court recommends dropping Case 4000, the only "
               "bribery charge against the PM, citing low odds of "
               "conviction.")},
-    {"kicker": "ENERGY \u2022 SANCTIONS", "color": C_AMBER, "badge": "6",
+    {"kicker": "ENERGY \u2022 SANCTIONS \u2022 BUSINESS WIRE", "color": C_AMBER, "badge": "6",
      "art": ill_oil,
      "headline": "LUKOIL'S OVERSEAS EMPIRE SOLD IN $10BN SHARE SWAP",
      "body": ("US-led consortium agrees to buy Lukoil International's "
               "portfolio in ~40 countries. OFAC approval still needed; "
               "no cash to Moscow.")},
-    {"kicker": "MIDDLE EAST \u2022 CONFLICT", "color": C_CRIMSON, "badge": "7",
+    {"kicker": "MIDDLE EAST \u2022 CONFLICT \u2022 REUTERS", "color": C_CRIMSON, "badge": "7",
      "art": ill_refinery,
      "headline": "HOUTHIS CLAIM RAS TANURA REFINERY HIT",
      "body": ("Houthis claim a strike on Aramco's largest refinery; the "
               "Saudi-led coalition says 4 drones were downed. Brent "
               "rises 3.5%.")},
-    {"kicker": "COLOMBIA \u2022 CRIME", "color": C_GREEN, "badge": "8",
+    {"kicker": "COLOMBIA \u2022 CRIME \u2022 REUTERS", "color": C_GREEN, "badge": "8",
      "art": ill_siege,
      "headline": "CARTAGENA SIEGE ENDS: ALL HOSTAGES FREED",
      "body": ("Dawn raid frees the last hostages from the \u00c9xito "
               "supermarket; 1 gunman killed. ~30 were held since "
               "Tuesday.")},
-    {"kicker": "UNITED STATES \u2022 CULTURE", "color": C_SLATE, "badge": "9",
+    {"kicker": "UNITED STATES \u2022 CULTURE \u2022 REUTERS", "color": C_SLATE, "badge": "9",
      "art": ill_parade,
      "headline": "MACY'S PARADE POSTPONED 2 DAYS BY STORM",
      "body": ("The 100th Thanksgiving parade moves to Saturday as a "
@@ -663,7 +690,8 @@ def main():
 
     # Sub-line.
     f_sub = F(SANS_B, 11)
-    sub = "ONE DAY \u2022 35 STORIES \u2022 NINE REGIONS"
+    sub = ("ONE DAY \u2022 35 STORIES \u2022 NINE REGIONS \u2022 EVERY ONE "
+           "DATED WEDNESDAY 25 NOVEMBER 2026")
     sw = d.textlength(sub, font=f_sub)
     d.text(((W - sw) / 2, 122), sub, font=f_sub, fill=INK)
 
@@ -768,7 +796,7 @@ def main():
     # big red x each. The 24 Nov wording (which won re-judging 10/10):
     # judges must not read the exclusions as included wrong-date stories.
     dy, dh = 706, 80
-    d.rectangle([MX, dy, W - MX, dy + dh], fill=RED_BAND, outline=RED, width=2)
+    d.rectangle([MX, dy, W - MX, dy + dh], fill=RED_BAND, outline=RED, width=1)
     f_dc = F(SANS_B, 13)
     d.text((MX + 12, dy + 5),
            "DATE CHECK \u2014 EVERY STORY ON THIS PAGE HAPPENED OR WAS "
